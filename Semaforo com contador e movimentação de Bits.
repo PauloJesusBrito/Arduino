@@ -1,0 +1,128 @@
+#include <avr/io.h>
+#include <util/delay.h>
+
+
+void display(int num){
+
+	switch(num){
+		case 9:
+			PORTC = (1 << 4);
+			PORTB &= ~(1 << 5);
+			break;
+		case 8:
+			PORTC = 0x00;
+			PORTB &= ~(1 << 5);
+			break;
+		case 7:
+			PORTC = (0xFF << 3);
+			PORTB |= (1 << 5);
+			break;
+		case 6:
+			PORTC = (1 << 1);
+			PORTB &= ~(1 << 5);
+			break;
+		case 5:
+			PORTC = (1 << 4 | 1 << 1);
+			PORTB &= ~(1 << 5);
+			break;
+		case 4:
+			PORTC = (3 << 3 | 1 << 0);
+			PORTB &= ~(1 << 5);
+			break;
+		case 3:
+			PORTC = (3 << 4);
+			PORTB &= ~(1 << 5);
+			break;
+		case 2:
+			PORTC = ~(3 << 3 | 3 << 0);
+			PORTB &= ~(1 << 5);
+			break;
+		case 1:
+			PORTC = ~(1 << 1 | 1 << 2);
+			PORTB |= (1 << 5);
+			break;
+		case 0 :
+			PORTC = 0x00;
+			PORTB |= (1 << 5);
+			break;
+		case 10: //digito
+			PORTC = 0xFF;
+			PORTB &= ~(1 << 5);
+			break;
+	}
+}
+
+void timerCarroVerde(){
+	for(int i=7; i>=0; i--){
+		display(i);
+		_delay_ms(1000);
+	}
+}
+
+void timerCarroAmarelo(){
+	display(10);
+	_delay_ms(2000);
+}
+
+void timerCarroVermelho(){
+
+	for(int i=9; i>=0; i--){
+		display(i);
+
+		//Faz piscar o vermelho do pedestre
+		if(i < 4){
+			PORTB &= 0b00100000;
+			PORTB |= 0b00000001;
+			_delay_ms(500);
+			PORTB &= 0b00100001;
+			PORTB |= 0b00001001;
+			//PORTB |= 0b00101001;
+			_delay_ms(500);
+		}else{
+			_delay_ms(1000);
+		}
+
+	}
+
+}
+
+
+void setup(){
+	DDRB = 0b11111111;
+	DDRC = 0b11111111;
+}
+
+
+/**
+ * 0: vermelho carro
+ * 1: amarelo carro
+ * 2: verde carro
+ * 3: vermelho pedestre
+ * 4: verde pedestre
+ */
+void loop(){
+
+	//verde carro
+	PORTB = 0b00000000;
+	PORTB |= 0b00001100; //carro verde | vermelho pedestre
+	timerCarroVerde();
+
+	//amarelo carro
+	PORTB &= 0b00000000; //desliga todos
+	PORTB |= 0b00001010; //amarelo carro | vermelho pedestre
+	timerCarroAmarelo();
+
+	//vermelho carro
+	PORTB &= 0b00000000;
+	PORTB |= 0b00010001; //carro vermelho | verde pedestre
+	timerCarroVermelho();
+}
+
+
+int main(void){
+	setup();
+	while(true){
+		loop();
+	}
+	return 0;
+}
