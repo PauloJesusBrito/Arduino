@@ -1,0 +1,186 @@
+#include <avr/io.h>
+#include <util/delay.h>
+
+
+void setup(){
+	DDRB = 0b00100000;
+	DDRC = 0b11111111;
+}
+void loop (){
+
+	// SENTIO HORARIO
+
+	PORTC = ~(0 << 1 | 0 << 2);
+	PORTB |= (1 << 5);
+
+
+	PORTC = 0b11111110;
+	_delay_ms(500); // liga A
+
+	PORTC = 0b11111100;
+	_delay_ms(500); // liga B
+
+	PORTC = 0b11111000;
+	_delay_ms(500); // liga C
+
+	PORTC = 0b11110000;
+	_delay_ms(500); // Liga D
+
+	PORTC = 0b11100000;
+	_delay_ms(500); // Liga E
+
+	PORTC = 0b11000000;
+	_delay_ms(500); // Liga F
+
+	PORTB = 0b11011111;
+	_delay_ms(500); //liga G
+
+	// SENTIDO ANTI HORARIO
+
+	PORTC = 0b11111111;// desliga A -> F
+	PORTB = 0b00100000;// Desliga G
+	_delay_ms(500);
+
+	PORTB = 0b11011111;
+	_delay_ms(500); //liga G
+
+	PORTC = 0b11011111;
+	_delay_ms(500); // Liga F
+
+	PORTC = 0b11001111;
+	_delay_ms(500); // Liga E
+
+	PORTC = 0b11000111;
+	_delay_ms(500); // Liga D
+
+	PORTC = 0b11000011;
+	_delay_ms(500); // liga C
+
+	PORTC = 0b11000001;
+	_delay_ms(500); // liga B
+
+	PORTC = 0b11000000;
+	_delay_ms(500); // liga A
+
+	// SOMENTE UM SEGMENTO LIGADO POR VEZ
+
+	PORTC = 0b11111111;// desliga A -> F
+	PORTB = 0b00100000;// Desliga G
+	_delay_ms(500);
+
+	PORTC = 0b11111110;
+	_delay_ms(500); // liga A
+
+	PORTC = 0b11111101;
+	_delay_ms(500); // liga B
+
+	PORTC = 0b11111011;
+	_delay_ms(500); // liga C
+
+	PORTC = 0b11110111;
+	_delay_ms(500); // Liga D
+
+	PORTC = 0b11101111;
+	_delay_ms(500); // Liga E
+
+	PORTC = 0b11011111;
+	_delay_ms(500); // Liga F
+
+	PORTC = 0b11111111;
+	PORTB = 0b11011111;
+	_delay_ms(500); //liga G
+
+	// Excercicio Letra D
+
+	PORTC = 0b11111111;// desliga A -> F
+	PORTB = 0b00100000;// Desliga G
+	_delay_ms(500);
+
+
+	PORTB = 0b11011111;
+	_delay_ms(500); //liga G
+
+	PORTB = 0B11111111;
+	PORTC = 0b11011111;
+	_delay_ms(500); // Liga F
+
+	PORTC = 0b11101111;
+	_delay_ms(500); // Liga E
+
+	PORTC = 0b11110111;
+	_delay_ms(500); // Liga D
+
+	PORTC = 0b11111011;
+	_delay_ms(500); // liga C
+
+	PORTC = 0b11111101;
+	_delay_ms(500); // liga B
+
+	PORTC = 0b11111110;
+	_delay_ms(500); // liga A
+
+
+	PORTC = 0b11111111;// desliga A -> F
+	PORTB = 0b00100000;// Desliga G
+	_delay_ms(500);
+
+	PORTC = 0b11111110;
+	_delay_ms(500); // liga A
+
+	PORTC = 0b11111101;
+	_delay_ms(500); // liga B
+
+	PORTC = 0b11111011;
+	_delay_ms(500); // liga C
+
+	PORTC = 0b11110111;
+	_delay_ms(500); // Liga D
+
+	PORTC = 0b11101111;
+	_delay_ms(500); // Liga E
+
+	PORTC = 0b11011111;
+	_delay_ms(500); // Liga F
+
+	PORTC = 0b11111111;
+	PORTB = 0b11011111;
+	_delay_ms(500); //liga G
+
+
+
+	PORTB = 0b11011111;
+	_delay_ms(500); //liga G
+
+	PORTB = 0B11111111;
+	PORTC = 0b11011111;
+	_delay_ms(500); // Liga F
+
+	PORTC = 0b11101111;
+	_delay_ms(500); // Liga E
+
+	PORTC = 0b11110111;
+	_delay_ms(500); // Liga D
+
+	PORTC = 0b11111011;
+	_delay_ms(500); // liga C
+
+	PORTC = 0b11111101;
+	_delay_ms(500); // liga B
+
+	PORTC = 0b11111110;
+	_delay_ms(500); // liga A
+
+}
+
+int main (void){
+
+	setup();
+	while(true){
+
+		loop();
+
+	}
+	return 0;
+}
+
+
