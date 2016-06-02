@@ -56,3 +56,240 @@ int main() {
 		loop();
 	return 0;
 }
+
+// SERIAL HPP
+
+/*
+ * serial.hpp
+ *
+ *  Created on: 16/05/2016
+ *      Author: puc
+ */
+
+ #include <stdint.h>
+
+enum usart_mode {
+	MODE_ASYNCHRONOUS = 0, MODE_SYNCHRONOUS = 1, MODE_MASTER_SPI = 3
+};
+enum usart_parity {
+	PARITY_DISABLED = 0, PARITY_EVEN = 1, PARITY_ODD = 3
+};
+enum usart_stop_bit {
+	STOP_BIT_ONE = 0, STOP_BIT_TWO = 1
+};
+enum usart_character_size {
+	CHAR_SIZE_5 = 0,
+	CHAR_SIZE_6 = 1,
+	CHAR_SIZE_7 = 2,
+	CHAR_SIZE_8 = 3,
+	CHAR_SIZE_9 = 7
+};
+enum usart_clock_polarity {
+	CLK_POL_RISING_EDGE = 0, CLK_POL_FALLING_EDGE = 1
+};
+enum usart_speed {
+	SPEED_NORMAL = 0,
+	SPEED_DOUBLE = 1
+};
+
+/* Informar o modo de operação */
+void set_usart_mode(usart_mode mode);
+/* Seleciona o modo de operação */
+usart_mode get_usart_mode();
+/* Seleciona a velocidade de operação */
+void set_usart_speed(usart_speed mode);
+/* Retorna a velocidade de operação */
+usart_speed get_usart_speed();
+/* Configura o	tamanho do	dado a ser transmitido */
+void set_character_size(usart_character_size chs);
+/* Configura o tamanho	do stop bit */
+void set_stop_bit(usart_stop_bit b);
+/* Configura a	taxa de transmissão */
+void set_baud_rate(uint16_t	baud);
+/* Habilita/desabilita	o RX */
+void enable_rx(bool x);
+/* Habilita/desabilita o TX */
+void enable_tx(bool x);
+/* Verifica se	existe algum dado a ser lido*/
+inline bool rx_complete();
+/* Verifica se	o buffer de transmissão está pronto	para receber novos dados */
+inline bool ready_to_tx();
+/* Leitura de um dado*/
+uint8_t	read();
+/* Escrita de um dado (caracter) */
+void write(uint8_t	byte);
+/* Escrita de uma cadeia de caracteres */
+void print(const char *str);
+/* Nova linha: “ENTER” */
+void println();
+/* Escrita de uma cadeia de caracteres com nova linha(“ENTER”) ao final */
+void println(const char *str);
+
+
+
+
+void set_usart_mode(usart_mode mode){
+	switch(mode){
+		case MODE_ASYNCHRONOUS:
+			UCSR0C &= ~(3 << 6);
+		break;
+		case MODE_SYNCHRONOUS:
+			UCSR0C &= ~(1 << UMSEL01);
+		break;
+		case MODE_MASTER_SPI:
+			UCSR0C |= (3 << UMSEL00);
+		break;
+	}
+}
+
+usart_mode get_usart_mode(){
+
+	/**
+	 * 0 = async
+	 * 1 = sync
+	 * 3 = master
+	 */
+	int flag = (UCSR0C >> 6);
+
+	switch(flag){
+	case 0: //00 - async
+		return MODE_ASYNCHRONOUS;
+	case 1: //01 - sync
+		return MODE_SYNCHRONOUS;
+	case 3: //11 - master
+		return MODE_MASTER_SPI;
+	}
+}
+
+void set_usart_speed(usart_speed speed){
+
+	switch(speed){
+	case SPEED_NORMAL:
+		UCSR0C &= ~(1 << U2X0);
+		break;
+	case SPEED_DOUBLE:
+		UCSR0C |= (1 << U2X0);
+		break;
+	}
+
+}
+
+usart_speed get_usart_speed(){
+
+	bool flag = (UCSR0C && (1 << U2X0));
+
+	if(flag){
+		return SPEED_NORMAL;
+	}else{
+		return SPEED_DOUBLE;
+	}
+}
+
+void set_character_size(usart_character_size chs){
+	switch(chs){
+		case CHAR_SIZE_5:
+			UCSR0B &= ~(1 << UCSZ02);
+			UCSR0C &= ~(3 << UCSZ00);
+		break;
+		case CHAR_SIZE_6:
+			UCSR0B &= ~(1 << UCSZ02);
+			UCSR0C &= ~(1 << UCSZ01);
+			UCSR0C |= (1 << UCSZ00);
+			break;
+		case CHAR_SIZE_7:
+			UCSR0B &= ~(1 << UCSZ02);
+			UCSR0C |= (1 << UCSZ01);
+			UCSR0C &= ~(1 << UCSZ00);
+			break;
+		case CHAR_SIZE_8:
+			UCSR0C = ((1<<UCSZ00)|(1<<UCSZ01));
+			break;
+		case CHAR_SIZE_9:
+			UCSR0B |= (1 << UCSZ02);
+			UCSR0C |= (3 << UCSZ00);
+			break;
+	}
+}
+
+void set_stop_bit(usart_stop_bit b){
+	switch(b){
+		case STOP_BIT_ONE:
+			UCSR0C &= ~(1 << USBS0);
+		break;
+		case STOP_BIT_TWO:
+			UCSR0C |= (1 << USBS0);
+		break;
+	}
+}
+
+void set_baud_rate(uint16_t	baud){
+
+	switch(get_usart_mode()){
+	case MODE_ASYNCHRONOUS:
+		if(get_usart_speed() == SPEED_DOUBLE){
+			UBRR0H = ((8000000/(baud*16UL)-1) >> 8);
+			UBRR0L = (8000000/(baud*16UL)-1);
+		}else{
+			UBRR0H = ((16000000/(baud*16UL)-1) >> 8);
+			UBRR0L = (16000000/(baud*16UL)-1);
+		}
+		break;
+	case MODE_SYNCHRONOUS:
+		UBRR0H = ((16000000/(baud*16UL)-1) >> 8);
+		UBRR0L = (16000000/(baud*16UL)-1);
+		break;
+	case MODE_MASTER_SPI:
+		UBRR0H = ((2000000/(baud*16UL)-1) >> 8);
+		UBRR0L = (2000000/(baud*16UL)-1);
+		break;
+	}
+}
+
+void enable_rx(bool x){
+	if(x)
+		UCSR0B |= (1 << RXEN0);
+	else
+		UCSR0B &= ~(1 << RXEN0);
+}
+
+void enable_tx(bool x){
+	if(x)
+		UCSR0B |= (1 << TXEN0);
+	else
+		UCSR0B &= ~(1 << TXEN0);
+}
+
+bool rx_complete(){
+	return ((UCSR0A) & (1 << RXC0));
+}
+
+bool ready_to_tx(){
+	return (UCSR0A & (1 << UDRE0));
+}
+
+uint8_t	read(){
+	while (!rx_complete());
+	return UDR0;
+}
+
+
+void write(uint8_t	byte){
+	while(!ready_to_tx());
+	UDR0 = byte;
+}
+
+void print(const char *str){
+	int i=0;
+	while(str[i] != 0){
+		write(str[i]);
+		i++;
+	}
+}
+void println(){
+	write('\n');
+}
+void println(const char *str){
+	print(str);
+	println();
+}
+
