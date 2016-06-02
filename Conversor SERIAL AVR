@@ -1,0 +1,58 @@
+/*
+ * main.cpp
+ *
+ *  Created on: 16/05/2016
+ *      Author: puc
+ */
+#include <avr/io.h>
+#include <util/delay.h>
+#include "serial.hpp"
+
+char op;
+
+void setup(void) {
+	DDRB = 0xFF;
+	/*	Configurar o	USART	*/
+
+	// Configurar modo	de	operação:	MODE_ASYNCHRONOUS
+	set_usart_mode(MODE_ASYNCHRONOUS);
+
+	// Configurar VELOCIDADE	de	operação:	NORMAL
+	set_usart_speed(SPEED_DOUBLE);
+
+	// Configurar tamanho do	caractere:	CHAR_SIZE_8
+	set_character_size(CHAR_SIZE_8);
+
+	// Configurar stop	bit:	STOP_BIT_ONE
+	set_stop_bit(STOP_BIT_ONE);
+
+	// Configurar baud	rate:	9600
+	set_baud_rate(9600);
+
+	// Habilitar RX
+	enable_rx(true);
+
+	// Habilitar TX
+	enable_tx(true);
+}
+void loop(void) {
+	println("---------- Menu ----------");
+	println("A.	Ligar LED");
+	println("B.	Desligar LED");
+	println("Digite uma opcao:	");
+
+	op = read();
+
+	if (op == 'A' || op == 'a') {
+		PORTB = 0xFF;//|= 0x20;
+	} else if (op == 'B' || op == 'b') {
+		PORTB = 0;//&= ~(0x20);
+	}
+}
+
+int main() {
+	setup();
+	while (true)
+		loop();
+	return 0;
+}
